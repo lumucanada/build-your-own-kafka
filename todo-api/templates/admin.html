@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理 · Todo App</title>
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text: #1f2937;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,.08);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,.1);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ---- 顶部导航 ---- */
+        .navbar {
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .navbar .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .navbar .nav-links .user-tag {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: background .15s;
+        }
+
+        .nav-links a:hover { background: #eef2ff; }
+        .nav-links a.danger { color: var(--danger); }
+        .nav-links a.danger:hover { background: #fef2f2; }
+
+        /* ---- 主容器 ---- */
+        .container {
+            max-width: 800px;
+            margin: 24px auto;
+            padding: 0 16px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ---- 统计卡片 ---- */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 500px) {
+            .stats-row { grid-template-columns: 1fr; }
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card .stat-icon { font-size: 32px; margin-bottom: 6px; }
+        .stat-card .stat-value { font-size: 28px; font-weight: 800; }
+        .stat-card .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+        .stat-card.total .stat-value { color: var(--primary); }
+        .stat-card.done .stat-value { color: var(--success); }
+        .stat-card.rate .stat-value { color: var(--warning); }
+
+        /* ---- 功能卡片 ---- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card .desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+            margin-right: 8px;
+            margin-bottom: 6px;
+        }
+
+        .btn:active { transform: scale(.96); }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: #059669; }
+
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: #dc2626; }
+
+        .btn-outline {
+            background: #fff;
+            border: 2px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover { background: #f9fafb; }
+
+        /* ---- 结果消息 ---- */
+        .result-msg {
+            margin-top: 10px;
+            font-size: 13px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: none;
+        }
+        .result-msg.success { background: #d1fae5; color: #065f46; }
+        .result-msg.error { background: #fee2e2; color: #991b1b; }
+        .result-msg.show { display: block; }
+
+        /* ---- 修改密码 ---- */
+        .form-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .form-row input {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-row input:focus {
+            border-color: var(--primary);
+        }
+
+        /* ---- Toast ---- */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity .3s;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<nav class="navbar">
+    <span class="brand">⚙️ 后台管理</span>
+    <span class="nav-links">
+        <span class="user-tag">👤 {{ user.username }}</span>
+        <a href="/">📋 返回首页</a>
+        <a href="/logout" class="danger">退出</a>
+    </span>
+</nav>
+
+<div class="container">
+    <h2 class="page-title">📊 数据概览</h2>
+
+    <!-- 统计 -->
+    <div class="stats-row">
+        <div class="stat-card total">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value" id="statTotal">-</div>
+            <div class="stat-label">总任务数</div>
+        </div>
+        <div class="stat-card done">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="statDone">-</div>
+            <div class="stat-label">已完成</div>
+        </div>
+        <div class="stat-card rate">
+            <div class="stat-icon">📈</div>
+            <div class="stat-value" id="statRate">-</div>
+            <div class="stat-label">完成率</div>
+        </div>
+    </div>
+
+    <!-- 批量操作 -->
+    <div class="card">
+        <h3>🗂️ 批量操作</h3>
+        <p class="desc">对任务进行批量管理，操作不可恢复，请谨慎使用。</p>
+
+        <button class="btn btn-success" onclick="batchDelete('completed')">
+            🧹 清除已完成任务
+        </button>
+        <button class="btn btn-danger" onclick="batchDelete('all')" id="btnClearAll">
+            ⚠️ 清空全部任务
+        </button>
+        <button class="btn btn-outline" onclick="exportCSV()">
+            📥 导出 CSV
+        </button>
+
+        <div class="result-msg" id="batchMsg"></div>
+    </div>
+
+    <!-- 修改密码 -->
+    <div class="card">
+        <h3>🔒 修改密码</h3>
+        <div class="form-row">
+            <input type="password" id="oldPw" placeholder="旧密码">
+            <input type="password" id="newPw" placeholder="新密码（至少6位）">
+            <button class="btn btn-primary" onclick="changePassword()">确认修改</button>
+        </div>
+        <div class="result-msg" id="pwMsg"></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- 加载统计 ----
+async function loadStats() {
+    try {
+        let res = await fetch('/api/stats');
+        let json = await res.json();
+        let d = json.data;
+        document.getElementById('statTotal').textContent = d.total;
+        document.getElementById('statDone').textContent = d.done;
+        document.getElementById('statRate').textContent = d.completion_rate;
+    } catch (err) {
+        toast('加载统计失败');
+    }
+}
+
+// ---- 批量删除 ----
+async function batchDelete(filter) {
+    let confirmMsg = filter === 'all'
+        ? '确定要清空全部任务吗？此操作不可恢复！'
+        : '确定删除所有已完成的任务吗？';
+
+    if (!confirm(confirmMsg)) return;
+
+    try {
+        let res = await fetch('/api/tasks/batch-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filter })
+        });
+        let json = await res.json();
+
+        showMsg('batchMsg', 'success', `✅ 成功删除 ${json.data.deleted} 条任务`);
+        loadStats();
+    } catch (err) {
+        showMsg('batchMsg', 'error', '操作失败');
+    }
+}
+
+// ---- 导出 CSV ----
+function exportCSV() {
+    window.open('/api/tasks/export', '_blank');
+    toast('📥 CSV 下载中...');
+}
+
+// ---- 修改密码 ----
+async function changePassword() {
+    let oldPw = document.getElementById('oldPw').value;
+    let newPw = document.getElementById('newPw').value;
+
+    if (!oldPw || !newPw) {
+        showMsg('pwMsg', 'error', '请填写旧密码和新密码');
+        return;
+    }
+    if (newPw.length < 6) {
+        showMsg('pwMsg', 'error', '新密码至少6位');
+        return;
+    }
+
+    try {
+        let res = await fetch('/api/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ old_password: oldPw, new_password: newPw })
+        });
+        let json = await res.json();
+
+        if (json.ok) {
+            showMsg('pwMsg', 'success', '✅ 密码修改成功');
+            document.getElementById('oldPw').value = '';
+            document.getElementById('newPw').value = '';
+        } else {
+            showMsg('pwMsg', 'error', '❌ ' + json.message);
+        }
+    } catch (err) {
+        showMsg('pwMsg', 'error', '操作失败');
+    }
+}
+
+// ---- 辅助 ----
+function showMsg(id, type, text) {
+    let el = document.getElementById(id);
+    el.className = 'result-msg ' + type + ' show';
+    el.textContent = text;
+    setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+function toast(msg) {
+    let el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ---- 启动 ----
+loadStats();
+</script>
+
+</body>
+</html>
