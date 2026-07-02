@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  todo-app:
+    build: .
+    container_name: todo-app
+    ports:
+      - "5000:5000"
+    volumes:
+      - todo-data:/app/data
+    environment:
+      - TODO_SECRET=your-random-secret-key-here
+      - TODO_ADMIN_USER=admin
+      - TODO_ADMIN_PASS=admin123
+      - TODO_HOST=0.0.0.0
+      - TODO_PORT=5000
+    restart: unless-stopped
+
+volumes:
+  todo-data:

@@ -1,0 +1,10 @@
+__pycache__
+*.pyc
+*.pyo
+todo.db
+dist/
+build/
+*.spec
+.env
+.git
+*.md
